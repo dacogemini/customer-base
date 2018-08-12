@@ -2,6 +2,14 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import (
+    AllowAny, 
+    IsAuthenticatedOrReadOnly, 
+    IsAdminUser,
+    DjangoModelPermissions,
+    DjangoModelPermissionsOrAnonReadOnly
+)
 from django.http.response import HttpResponseNotAllowed
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -28,6 +36,8 @@ class CustomerViewSet(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     ordering = ('-id',)
     lookup_field = 'doc_num'
+    authentication_classes = [TokenAuthentication,]
+    permission_classes = [IsAuthenticatedOrReadOnly,]
 
     def get_queryset(self):
         address = self.request.query_params.get('address', None)
@@ -137,13 +147,18 @@ class CustomerViewSet(viewsets.ModelViewSet):
 class ProfessionViewSet(viewsets.ModelViewSet):
     queryset = Profession.objects.all()
     serializer_class = ProfessionSerializer
+    authentication_classes = [TokenAuthentication,]
+    permission_classes = [IsAdminUser,]
 
 
 class DataSheetViewSet(viewsets.ModelViewSet):
     queryset = DataSheet.objects.all()
     serializer_class = DataSheetSerializer
+    permission_classes = [AllowAny,]
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [DjangoModelPermissionsOrAnonReadOnly]
